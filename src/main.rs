@@ -1,11 +1,17 @@
 use bevy::prelude::*;
 
 fn main() {
-	App::build()
-		.add_startup_system(add_people_to_world.system())
-		.add_system(hello_world.system())
-		.add_system(greet_people.system())
-		.run();
+	App::build().add_default_plugins().add_plugin(HelloPlugin).run();
+}
+
+struct HelloPlugin;
+
+impl Plugin for HelloPlugin {
+	fn build(&self, app: &mut AppBuilder) {
+		app.add_startup_system(add_people_to_world.system())
+			.add_system(hello_world.system())
+			.add_system(greet_people.system());
+	}
 }
 
 struct Person;
