@@ -8,8 +8,8 @@ struct HelloPlugin;
 
 impl Plugin for HelloPlugin {
 	fn build(&self, app: &mut AppBuilder) {
-		app.add_startup_system(add_people_to_world.system())
-			.add_system(hello_world.system())
+		app.add_resource(GreetTimer(Timer::from_seconds(2.0, true)))
+			.add_startup_system(add_people_to_world.system())
 			.add_system(greet_people.system());
 	}
 }
@@ -24,10 +24,14 @@ fn add_people_to_world(mut commands: Commands) {
 		.spawn((Person, Name("Charlie".into())));
 }
 
-fn greet_people(_people: &Person, Name(name): &Name) {
-	println!("Hello {}!", name);
-}
+struct GreetTimer(Timer);
 
-fn hello_world() {
-	println!("hello world!");
+fn greet_people(time: Res<Time>, mut timer: ResMut<GreetTimer>, mut all_people: Query<(&Person, &Name)>) {
+	let delta = time.delta_seconds;
+	timer.0.tick(delta);
+	if timer.0.finished {
+		for (_person, Name(name)) in &mut all_people.iter() {
+			println!("Hello {}!", name);
+		}
+	}
 }
