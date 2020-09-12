@@ -1,8 +1,11 @@
+use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, PrintDiagnosticsPlugin};
 use bevy::prelude::*;
 
 fn main() {
 	App::build()
 		.add_default_plugins()
+		.add_plugin(FrameTimeDiagnosticsPlugin)
+		.add_plugin(PrintDiagnosticsPlugin::default())
 		.add_startup_system(setup.system())
 		.add_system(ball_movement_system.system())
 		.add_system(paddle_movement_system.system())
