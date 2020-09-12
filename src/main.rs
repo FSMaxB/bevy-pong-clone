@@ -14,6 +14,22 @@ struct Ball {
 
 struct Paddle;
 
+enum Player {
+	Left,
+	Right,
+}
+
+impl Player {
+	fn start_position(&self) -> Vec2 {
+		let x_position = match self {
+			Player::Left => -300.0,
+			Player::Right => 300.0,
+		};
+
+		Vec2::new(x_position, 0.0)
+	}
+}
+
 impl Default for Ball {
 	fn default() -> Self {
 		const DEFAULT_VELOCITY: f32 = 100.0;
@@ -26,8 +42,8 @@ impl Default for Ball {
 fn setup(mut commands: Commands) {
 	commands.spawn(Camera2dComponents::default());
 	spawn_ball(&mut commands);
-	spawn_paddle(&mut commands, Vec2::new(-300.0, 0.0));
-	spawn_paddle(&mut commands, Vec2::new(300.0, 0.0));
+	spawn_paddle(&mut commands, Player::Left);
+	spawn_paddle(&mut commands, Player::Right);
 }
 
 fn spawn_ball(commands: &mut Commands) {
@@ -44,13 +60,13 @@ fn spawn_ball(commands: &mut Commands) {
 		.with(Ball::default());
 }
 
-fn spawn_paddle(commands: &mut Commands, start_position: Vec2) {
+fn spawn_paddle(commands: &mut Commands, player: Player) {
 	commands
 		.spawn(SpriteComponents {
 			sprite: Sprite {
 				size: Vec2::new(20.0, 200.0),
 			},
-			translation: Translation(start_position.extend(0.0)),
+			translation: Translation(player.start_position().extend(0.0)),
 			..Default::default()
 		})
 		.with(Paddle);
