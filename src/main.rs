@@ -18,6 +18,8 @@ fn spawn_ball(commands: &mut Commands) {
 		sprite: Sprite {
 			size: Vec2::new(SIZE, SIZE),
 		},
+		translation: Translation::new(300.0, 200.0, 0.0),
+		rotation: Rotation::from_rotation_z(std::f32::consts::PI / 4.0),
 		..Default::default()
 	});
 }
