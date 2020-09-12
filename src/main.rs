@@ -8,13 +8,14 @@ fn main() {
 }
 
 fn setup(mut commands: Commands) {
+	commands.spawn(Camera2dComponents::default());
 	spawn_ball(&mut commands);
 }
 
 fn spawn_ball(commands: &mut Commands) {
 	const SIZE: f32 = 50.0;
 
-	commands.spawn(Camera2dComponents::default()).spawn(SpriteComponents {
+	commands.spawn(SpriteComponents {
 		sprite: Sprite {
 			size: Vec2::new(SIZE, SIZE),
 		},
