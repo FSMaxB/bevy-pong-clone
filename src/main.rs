@@ -1,6 +1,7 @@
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, PrintDiagnosticsPlugin};
 use bevy::prelude::*;
 use bevy::render::pass::ClearColor;
+use bevy::window::WindowResized;
 
 fn main() {
 	App::build()
@@ -10,6 +11,7 @@ fn main() {
 		.add_startup_system(setup.system())
 		.add_system(ball_movement_system.system())
 		.add_system(paddle_movement_system.system())
+		.add_system(window_resize_listener.system())
 		.run();
 }
 
@@ -69,6 +71,7 @@ fn setup(mut commands: Commands) {
 		resizable: true,
 		..Default::default()
 	});
+	commands.insert_resource(WindowResizeListenerState::default());
 }
 
 fn spawn_ball(commands: &mut Commands) {
@@ -122,5 +125,19 @@ fn paddle_movement_system(
 		if keyboard_input.pressed(down_keycode) {
 			translation.0 += time_delta * Vec2::new(0.0, -Paddle::SPEED).extend(0.0);
 		}
+	}
+}
+
+#[derive(Default)]
+struct WindowResizeListenerState {
+	event_reader: EventReader<WindowResized>,
+}
+
+fn window_resize_listener(
+	mut resize_listener: ResMut<WindowResizeListenerState>,
+	resize_events: Res<Events<WindowResized>>,
+) {
+	if let Some(resize_event) = resize_listener.event_reader.latest(&resize_events) {
+		println!("Window resized to {}x{}", resize_event.width, resize_event.height);
 	}
 }
