@@ -5,6 +5,7 @@ fn main() {
 		.add_default_plugins()
 		.add_startup_system(setup.system())
 		.add_system(ball_movement_system.system())
+		.add_system(paddle_movement_system.system())
 		.run();
 }
 
@@ -13,6 +14,10 @@ struct Ball {
 }
 
 struct Paddle;
+
+impl Paddle {
+	const SPEED: f32 = 200.0;
+}
 
 enum Player {
 	Left,
@@ -27,6 +32,13 @@ impl Player {
 		};
 
 		Vec2::new(x_position, 0.0)
+	}
+
+	fn movement_keys(&self) -> (KeyCode, KeyCode) {
+		match self {
+			Player::Left => (KeyCode::W, KeyCode::S),
+			Player::Right => (KeyCode::Up, KeyCode::Down),
+		}
 	}
 }
 
@@ -69,12 +81,33 @@ fn spawn_paddle(commands: &mut Commands, player: Player) {
 			translation: Translation(player.start_position().extend(0.0)),
 			..Default::default()
 		})
-		.with(Paddle);
+		.with(Paddle)
+		.with(player);
 }
 
 fn ball_movement_system(time: Res<Time>, mut query: Query<(&Ball, &mut Translation)>) {
 	let time_delta = time.delta_seconds;
 	for (ball, mut translation) in &mut query.iter() {
 		translation.0 += time_delta * ball.velocity.extend(0.0);
+	}
+}
+
+fn paddle_movement_system(
+	time: Res<Time>,
+	keyboard_input: Res<Input<KeyCode>>,
+	mut query: Query<(&Paddle, &Player, &mut Translation)>,
+) {
+	let time_delta = time.delta_seconds;
+
+	for (_paddle, player, mut translation) in &mut query.iter() {
+		let (up_keycode, down_keycode) = player.movement_keys();
+
+		if keyboard_input.pressed(up_keycode) {
+			translation.0 += time_delta * Vec2::new(0.0, Paddle::SPEED).extend(0.0);
+		}
+
+		if keyboard_input.pressed(down_keycode) {
+			translation.0 += time_delta * Vec2::new(0.0, -Paddle::SPEED).extend(0.0);
+		}
 	}
 }
