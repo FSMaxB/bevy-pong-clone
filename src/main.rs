@@ -1,5 +1,6 @@
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, PrintDiagnosticsPlugin};
 use bevy::prelude::*;
+use bevy::render::pass::ClearColor;
 
 fn main() {
 	App::build()
@@ -59,6 +60,7 @@ fn setup(mut commands: Commands) {
 	spawn_ball(&mut commands);
 	spawn_paddle(&mut commands, Player::Left);
 	spawn_paddle(&mut commands, Player::Right);
+	commands.insert_resource(ClearColor(Color::BLACK));
 }
 
 fn spawn_ball(commands: &mut Commands) {
