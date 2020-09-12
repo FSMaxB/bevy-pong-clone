@@ -61,6 +61,14 @@ fn setup(mut commands: Commands) {
 	spawn_paddle(&mut commands, Player::Left);
 	spawn_paddle(&mut commands, Player::Right);
 	commands.insert_resource(ClearColor(Color::BLACK));
+	commands.insert_resource(WindowDescriptor {
+		width: 1280,
+		height: 720,
+		title: "pong clone".to_string(),
+		vsync: true,
+		resizable: true,
+		..Default::default()
+	});
 }
 
 fn spawn_ball(commands: &mut Commands) {
