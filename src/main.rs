@@ -5,7 +5,7 @@ use bevy::window::WindowResized;
 
 fn main() {
 	App::build()
-		.add_default_plugins()
+		.add_plugins(DefaultPlugins)
 		.add_plugin(FrameTimeDiagnosticsPlugin)
 		.add_plugin(PrintDiagnosticsPlugin::default())
 		.add_startup_system(setup.system())
@@ -81,8 +81,12 @@ fn spawn_ball(commands: &mut Commands) {
 		.spawn(SpriteComponents {
 			sprite: Sprite {
 				size: Vec2::new(SIZE, SIZE),
+				..Default::default()
 			},
-			rotation: Rotation::from_rotation_z(std::f32::consts::PI / 4.0),
+			transform: Transform {
+				rotation: Quat::from_rotation_z(std::f32::consts::PI / 4.0),
+				..Default::default()
+			},
 			..Default::default()
 		})
 		.with(Ball::default());
@@ -93,37 +97,41 @@ fn spawn_paddle(commands: &mut Commands, player: Player) {
 		.spawn(SpriteComponents {
 			sprite: Sprite {
 				size: Vec2::new(20.0, 200.0),
+				..Default::default()
 			},
-			translation: Translation(player.start_position().extend(0.0)),
+			transform: Transform {
+				translation: player.start_position().extend(0.0),
+				..Default::default()
+			},
 			..Default::default()
 		})
 		.with(Paddle)
 		.with(player);
 }
 
-fn ball_movement_system(time: Res<Time>, mut query: Query<(&Ball, &mut Translation)>) {
+fn ball_movement_system(time: Res<Time>, mut query: Query<(&Ball, &mut Transform)>) {
 	let time_delta = time.delta_seconds;
-	for (ball, mut translation) in &mut query.iter() {
-		translation.0 += time_delta * ball.velocity.extend(0.0);
+	for (ball, mut transform) in query.iter_mut() {
+		transform.translation += time_delta * ball.velocity.extend(0.0);
 	}
 }
 
 fn paddle_movement_system(
 	time: Res<Time>,
 	keyboard_input: Res<Input<KeyCode>>,
-	mut query: Query<(&Paddle, &Player, &mut Translation)>,
+	mut query: Query<(&Paddle, &Player, &mut Transform)>,
 ) {
 	let time_delta = time.delta_seconds;
 
-	for (_paddle, player, mut translation) in &mut query.iter() {
+	for (_paddle, player, mut transform) in query.iter_mut() {
 		let (up_keycode, down_keycode) = player.movement_keys();
 
 		if keyboard_input.pressed(up_keycode) {
-			translation.0 += time_delta * Vec2::new(0.0, Paddle::SPEED).extend(0.0);
+			transform.translation += time_delta * Vec2::new(0.0, Paddle::SPEED).extend(0.0);
 		}
 
 		if keyboard_input.pressed(down_keycode) {
-			translation.0 += time_delta * Vec2::new(0.0, -Paddle::SPEED).extend(0.0);
+			transform.translation += time_delta * Vec2::new(0.0, -Paddle::SPEED).extend(0.0);
 		}
 	}
 }
