@@ -83,10 +83,6 @@ fn spawn_ball(commands: &mut Commands) {
 				size: Vec2::new(SIZE, SIZE),
 				..Default::default()
 			},
-			transform: Transform {
-				rotation: Quat::from_rotation_z(std::f32::consts::PI / 4.0),
-				..Default::default()
-			},
 			..Default::default()
 		})
 		.with(Ball::default());
