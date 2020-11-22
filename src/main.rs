@@ -1,6 +1,7 @@
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, PrintDiagnosticsPlugin};
 use bevy::prelude::*;
 use bevy::render::pass::ClearColor;
+use bevy::sprite::collide_aabb::{collide, Collision};
 use bevy::window::WindowResized;
 
 fn main() {
@@ -12,6 +13,7 @@ fn main() {
 		.add_system(ball_movement_system.system())
 		.add_system(paddle_movement_system.system())
 		.add_system(window_resize_listener.system())
+		.add_system(ball_collision_system.system())
 		.run();
 }
 
@@ -56,6 +58,8 @@ impl Default for Ball {
 		}
 	}
 }
+
+struct Collider;
 
 fn setup(mut commands: Commands) {
 	commands.spawn(Camera2dComponents::default());
@@ -102,7 +106,8 @@ fn spawn_paddle(commands: &mut Commands, player: Player) {
 			..Default::default()
 		})
 		.with(Paddle)
-		.with(player);
+		.with(player)
+		.with(Collider);
 }
 
 fn ball_movement_system(time: Res<Time>, mut query: Query<(&Ball, &mut Transform)>) {
@@ -132,6 +137,42 @@ fn paddle_movement_system(
 	}
 }
 
+fn ball_collision_system(
+	mut ball_query: Query<(&mut Ball, &Transform, &Sprite)>,
+	collider_query: Query<(&Collider, &Transform, &Sprite)>,
+) {
+	for (mut ball, ball_transform, ball_sprite) in ball_query.iter_mut() {
+		for (_collider, collider_transform, collider_sprite) in collider_query.iter() {
+			let collision = collide(
+				ball_transform.translation,
+				ball_sprite.size,
+				collider_transform.translation,
+				collider_sprite.size,
+			);
+
+			let collision = match collision {
+				Some(collision) => collision,
+				None => continue,
+			};
+
+			use Collision::*;
+			let (reflect_x, reflect_y) = match collision {
+				Left => (ball.velocity.x() > 0.0, false),
+				Right => (ball.velocity.x() < 0.0, false),
+				Top => (false, ball.velocity.y() < 0.0),
+				Bottom => (false, ball.velocity.y() > 0.0),
+			};
+
+			if reflect_x {
+				*ball.velocity.x_mut() = -ball.velocity.x();
+			}
+
+			if reflect_y {
+				*ball.velocity.y_mut() = -ball.velocity.y();
+			}
+		}
+	}
+}
 #[derive(Default)]
 struct WindowResizeListenerState {
 	event_reader: EventReader<WindowResized>,
