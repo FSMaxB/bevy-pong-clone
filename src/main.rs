@@ -21,12 +21,18 @@ struct Ball {
 	velocity: Vec2,
 }
 
-struct Paddle;
+#[derive(Default)]
+struct Paddle {
+	speed: f32,
+}
 
 impl Paddle {
-	const SPEED: f32 = 200.0;
 	const WIDTH: f32 = 20.0;
 	const MARGIN: f32 = 30.0;
+
+	fn update_after_window_resize(&mut self, height: usize) {
+		self.speed = (height as f32) / 3.0;
+	}
 }
 
 enum Player {
@@ -117,7 +123,7 @@ fn spawn_paddle(commands: &mut Commands, player: Player) {
 			},
 			..Default::default()
 		})
-		.with(Paddle)
+		.with(Paddle::default())
 		.with(player)
 		.with(Collider);
 }
@@ -136,15 +142,15 @@ fn paddle_movement_system(
 ) {
 	let time_delta = time.delta_seconds;
 
-	for (_paddle, player, mut transform) in query.iter_mut() {
+	for (paddle, player, mut transform) in query.iter_mut() {
 		let (up_keycode, down_keycode) = player.movement_keys();
 
 		if keyboard_input.pressed(up_keycode) {
-			transform.translation += time_delta * Vec2::new(0.0, Paddle::SPEED).extend(0.0);
+			transform.translation += time_delta * Vec2::new(0.0, paddle.speed).extend(0.0);
 		}
 
 		if keyboard_input.pressed(down_keycode) {
-			transform.translation += time_delta * Vec2::new(0.0, -Paddle::SPEED).extend(0.0);
+			transform.translation += time_delta * Vec2::new(0.0, -paddle.speed).extend(0.0);
 		}
 	}
 }
@@ -193,14 +199,17 @@ struct WindowResizeListenerState {
 fn window_resize_listener(
 	mut resize_listener: ResMut<WindowResizeListenerState>,
 	resize_events: Res<Events<WindowResized>>,
-	mut paddles: Query<(&mut Sprite, &mut Transform, &Paddle, &Player)>,
+	mut paddles: Query<(&mut Sprite, &mut Transform, &mut Paddle, &Player)>,
 ) {
 	if let Some(resize_event) = resize_listener.event_reader.latest(&resize_events) {
-		println!("Window resized to {}x{}", resize_event.width, resize_event.height);
-		for (mut sprite, mut transform, _paddle, player) in paddles.iter_mut() {
-			let (size, translation) = player.paddle_size_and_translation(resize_event.width, resize_event.height);
+		let width = resize_event.width;
+		let height = resize_event.height;
+		println!("Window resized to {}x{}", width, height);
+		for (mut sprite, mut transform, mut paddle, player) in paddles.iter_mut() {
+			let (size, translation) = player.paddle_size_and_translation(width, height);
 			sprite.size = size;
 			transform.translation = translation;
+			paddle.update_after_window_resize(height);
 		}
 	}
 }
