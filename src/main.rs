@@ -1,8 +1,12 @@
+use crate::paddle::paddle_movement_system;
+use crate::paddle::Paddle;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, PrintDiagnosticsPlugin};
 use bevy::prelude::*;
 use bevy::render::pass::ClearColor;
 use bevy::sprite::collide_aabb::{collide, Collision};
 use bevy::window::WindowResized;
+
+mod paddle;
 
 fn main() {
 	App::build()
@@ -48,21 +52,8 @@ impl Default for Ball {
 	}
 }
 
-#[derive(Default)]
-struct Paddle {
-	speed: f32,
-}
-
-impl Paddle {
-	const WIDTH: f32 = 20.0;
-	const MARGIN: f32 = 30.0;
-
-	fn update_after_window_resize(&mut self, window_height: usize) {
-		self.speed = (window_height as f32) / 3.0;
-	}
-}
-
-enum Player {
+#[derive(Clone, Copy)]
+pub enum Player {
 	Left,
 	Right,
 }
@@ -75,16 +66,6 @@ impl Player {
 		};
 
 		Vec2::new(x_position, 0.0)
-	}
-
-	fn paddle_size_and_translation(&self, window_width: usize, window_height: usize) -> (Vec2, Vec3) {
-		let size = Vec2::new(Paddle::WIDTH, 0.2 * (window_height as f32));
-		let translation = match self {
-			Player::Left => Vec2::new(Paddle::MARGIN - ((window_width as f32) / 2.0), 0.0),
-			Player::Right => Vec2::new(((window_width as f32) / 2.0) - Paddle::MARGIN, 0.0),
-		}
-		.extend(0.0);
-		(size, translation)
 	}
 
 	fn movement_keys(&self) -> (KeyCode, KeyCode) {
@@ -153,26 +134,6 @@ fn ball_movement_system(time: Res<Time>, mut query: Query<(&Ball, &mut Transform
 	}
 }
 
-fn paddle_movement_system(
-	time: Res<Time>,
-	keyboard_input: Res<Input<KeyCode>>,
-	mut query: Query<(&Paddle, &Player, &mut Transform)>,
-) {
-	let time_delta = time.delta_seconds;
-
-	for (paddle, player, mut transform) in query.iter_mut() {
-		let (up_keycode, down_keycode) = player.movement_keys();
-
-		if keyboard_input.pressed(up_keycode) {
-			transform.translation += time_delta * Vec2::new(0.0, paddle.speed).extend(0.0);
-		}
-
-		if keyboard_input.pressed(down_keycode) {
-			transform.translation += time_delta * Vec2::new(0.0, -paddle.speed).extend(0.0);
-		}
-	}
-}
-
 fn ball_collision_system(
 	mut ball_query: Query<(&mut Ball, &Transform, &Sprite)>,
 	collider_query: Query<(&Collider, &Transform, &Sprite)>,
@@ -226,10 +187,7 @@ fn window_resize_listener(
 		println!("Window resized to {}x{}", width, height);
 
 		for (mut sprite, mut transform, mut paddle, player) in paddles.iter_mut() {
-			let (size, translation) = player.paddle_size_and_translation(width, height);
-			sprite.size = size;
-			transform.translation = translation;
-			paddle.update_after_window_resize(height);
+			paddle.update_after_window_resize(resize_event, *player, &mut sprite.size, &mut transform.translation);
 		}
 
 		for (mut ball, mut sprite, mut transform) in ball.iter_mut() {
