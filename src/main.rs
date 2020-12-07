@@ -25,6 +25,8 @@ struct Paddle;
 
 impl Paddle {
 	const SPEED: f32 = 200.0;
+	const WIDTH: f32 = 20.0;
+	const MARGIN: f32 = 30.0;
 }
 
 enum Player {
@@ -40,6 +42,16 @@ impl Player {
 		};
 
 		Vec2::new(x_position, 0.0)
+	}
+
+	fn paddle_size_and_translation(&self, width: usize, height: usize) -> (Vec2, Vec3) {
+		let size = Vec2::new(Paddle::WIDTH, 0.2 * (height as f32));
+		let translation = match self {
+			Player::Left => Vec2::new(Paddle::MARGIN - ((width as f32) / 2.0), 0.0),
+			Player::Right => Vec2::new(((width as f32) / 2.0) - Paddle::MARGIN, 0.0),
+		}
+		.extend(0.0);
+		(size, translation)
 	}
 
 	fn movement_keys(&self) -> (KeyCode, KeyCode) {
@@ -181,8 +193,14 @@ struct WindowResizeListenerState {
 fn window_resize_listener(
 	mut resize_listener: ResMut<WindowResizeListenerState>,
 	resize_events: Res<Events<WindowResized>>,
+	mut paddles: Query<(&mut Sprite, &mut Transform, &Paddle, &Player)>,
 ) {
 	if let Some(resize_event) = resize_listener.event_reader.latest(&resize_events) {
 		println!("Window resized to {}x{}", resize_event.width, resize_event.height);
+		for (mut sprite, mut transform, _paddle, player) in paddles.iter_mut() {
+			let (size, translation) = player.paddle_size_and_translation(resize_event.width, resize_event.height);
+			sprite.size = size;
+			transform.translation = translation;
+		}
 	}
 }
