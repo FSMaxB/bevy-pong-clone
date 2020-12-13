@@ -3,6 +3,7 @@ use crate::ball::{spawn_ball, Ball};
 use crate::goal::{spawn_goals, Goal};
 use crate::paddle::paddle_movement_system;
 use crate::paddle::{spawn_paddles, Paddle};
+use crate::score::spawn_score_board;
 use crate::wall::{spawn_walls, Wall};
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, PrintDiagnosticsPlugin};
 use bevy::prelude::*;
@@ -12,6 +13,7 @@ use bevy::window::WindowResized;
 mod ball;
 mod goal;
 mod paddle;
+mod score;
 mod wall;
 
 fn main() {
@@ -44,12 +46,14 @@ impl Player {
 
 pub struct Collider;
 
-fn setup(mut commands: Commands) {
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 	commands.spawn(Camera2dComponents::default());
+	commands.spawn(UiCameraComponents::default());
 	spawn_ball(&mut commands);
 	spawn_paddles(&mut commands);
 	spawn_walls(&mut commands);
 	spawn_goals(&mut commands);
+	spawn_score_board(&mut commands, &asset_server);
 	commands.insert_resource(ClearColor(Color::BLACK));
 	commands.insert_resource(WindowDescriptor {
 		width: 1280,
