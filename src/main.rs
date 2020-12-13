@@ -1,7 +1,7 @@
 use crate::ball::{ball_collision_system, ball_movement_system};
 use crate::ball::{spawn_ball, Ball};
-use crate::paddle::Paddle;
-use crate::paddle::{paddle_movement_system, spawn_paddle};
+use crate::paddle::paddle_movement_system;
+use crate::paddle::{spawn_paddles, Paddle};
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, PrintDiagnosticsPlugin};
 use bevy::prelude::*;
 use bevy::render::pass::ClearColor;
@@ -52,8 +52,7 @@ pub struct Collider;
 fn setup(mut commands: Commands) {
 	commands.spawn(Camera2dComponents::default());
 	spawn_ball(&mut commands);
-	spawn_paddle(&mut commands, Player::Left);
-	spawn_paddle(&mut commands, Player::Right);
+	spawn_paddles(&mut commands);
 	commands.insert_resource(ClearColor(Color::BLACK));
 	commands.insert_resource(WindowDescriptor {
 		width: 1280,

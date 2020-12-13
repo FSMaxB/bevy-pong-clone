@@ -41,7 +41,12 @@ impl Paddle {
 	}
 }
 
-pub fn spawn_paddle(commands: &mut Commands, player: Player) {
+pub fn spawn_paddles(commands: &mut Commands) {
+	spawn_paddle(commands, Player::Left);
+	spawn_paddle(commands, Player::Right);
+}
+
+fn spawn_paddle(commands: &mut Commands, player: Player) {
 	commands
 		.spawn(SpriteComponents {
 			sprite: Sprite {
