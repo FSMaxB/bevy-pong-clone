@@ -1,7 +1,7 @@
-use crate::ball::Ball;
 use crate::ball::{ball_collision_system, ball_movement_system};
-use crate::paddle::paddle_movement_system;
+use crate::ball::{spawn_ball, Ball};
 use crate::paddle::Paddle;
+use crate::paddle::{paddle_movement_system, spawn_paddle};
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, PrintDiagnosticsPlugin};
 use bevy::prelude::*;
 use bevy::render::pass::ClearColor;
@@ -64,38 +64,6 @@ fn setup(mut commands: Commands) {
 		..Default::default()
 	});
 	commands.insert_resource(WindowResizeListenerState::default());
-}
-
-fn spawn_ball(commands: &mut Commands) {
-	const SIZE: f32 = 50.0;
-
-	commands
-		.spawn(SpriteComponents {
-			sprite: Sprite {
-				size: Vec2::new(SIZE, SIZE),
-				..Default::default()
-			},
-			..Default::default()
-		})
-		.with(Ball::default());
-}
-
-fn spawn_paddle(commands: &mut Commands, player: Player) {
-	commands
-		.spawn(SpriteComponents {
-			sprite: Sprite {
-				size: Vec2::new(20.0, 200.0),
-				..Default::default()
-			},
-			transform: Transform {
-				translation: player.start_position().extend(0.0),
-				..Default::default()
-			},
-			..Default::default()
-		})
-		.with(Paddle::default())
-		.with(player)
-		.with(Collider);
 }
 
 #[derive(Default)]

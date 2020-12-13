@@ -1,9 +1,11 @@
-use crate::Player;
+use crate::{Collider, Player};
 use bevy::core::Time;
-use bevy::ecs::{Query, Res};
+use bevy::ecs::{Commands, Query, Res};
 use bevy::input::keyboard::KeyCode;
 use bevy::input::Input;
 use bevy::math::{Vec2, Vec3};
+use bevy::sprite::entity::SpriteComponents;
+use bevy::sprite::Sprite;
 use bevy::transform::components::Transform;
 use bevy::window::WindowResized;
 
@@ -37,6 +39,24 @@ impl Paddle {
 
 		*translation = Vec3::new(x_translation, 0.0, 0.0);
 	}
+}
+
+pub fn spawn_paddle(commands: &mut Commands, player: Player) {
+	commands
+		.spawn(SpriteComponents {
+			sprite: Sprite {
+				size: Vec2::new(20.0, 200.0),
+				..Default::default()
+			},
+			transform: Transform {
+				translation: player.start_position().extend(0.0),
+				..Default::default()
+			},
+			..Default::default()
+		})
+		.with(Paddle::default())
+		.with(player)
+		.with(Collider);
 }
 
 pub fn paddle_movement_system(

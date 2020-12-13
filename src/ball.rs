@@ -1,9 +1,10 @@
 use crate::Collider;
 use bevy::core::Time;
-use bevy::ecs::{Query, Res};
+use bevy::ecs::{Commands, Query, Res};
 use bevy::math::{Vec2, Vec3};
 use bevy::sprite::collide_aabb::collide;
 use bevy::sprite::collide_aabb::Collision;
+use bevy::sprite::entity::SpriteComponents;
 use bevy::sprite::Sprite;
 use bevy::transform::components::Transform;
 use bevy::window::WindowResized;
@@ -41,6 +42,20 @@ impl Default for Ball {
 			direction: Vec2::new(1.0, 1.0).normalize(),
 		}
 	}
+}
+
+pub fn spawn_ball(commands: &mut Commands) {
+	const SIZE: f32 = 50.0;
+
+	commands
+		.spawn(SpriteComponents {
+			sprite: Sprite {
+				size: Vec2::new(SIZE, SIZE),
+				..Default::default()
+			},
+			..Default::default()
+		})
+		.with(Ball::default());
 }
 
 pub fn ball_movement_system(time: Res<Time>, mut query: Query<(&Ball, &mut Transform)>) {
