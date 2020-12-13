@@ -45,17 +45,7 @@ impl Default for Ball {
 }
 
 pub fn spawn_ball(commands: &mut Commands) {
-	const SIZE: f32 = 50.0;
-
-	commands
-		.spawn(SpriteComponents {
-			sprite: Sprite {
-				size: Vec2::new(SIZE, SIZE),
-				..Default::default()
-			},
-			..Default::default()
-		})
-		.with(Ball::default());
+	commands.spawn(SpriteComponents::default()).with(Ball::default());
 }
 
 pub fn ball_movement_system(time: Res<Time>, mut query: Query<(&Ball, &mut Transform)>) {

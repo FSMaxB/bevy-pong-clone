@@ -5,7 +5,6 @@ use bevy::input::keyboard::KeyCode;
 use bevy::input::Input;
 use bevy::math::{Vec2, Vec3};
 use bevy::sprite::entity::SpriteComponents;
-use bevy::sprite::Sprite;
 use bevy::transform::components::Transform;
 use bevy::window::WindowResized;
 
@@ -48,17 +47,7 @@ pub fn spawn_paddles(commands: &mut Commands) {
 
 fn spawn_paddle(commands: &mut Commands, player: Player) {
 	commands
-		.spawn(SpriteComponents {
-			sprite: Sprite {
-				size: Vec2::new(20.0, 200.0),
-				..Default::default()
-			},
-			transform: Transform {
-				translation: player.start_position().extend(0.0),
-				..Default::default()
-			},
-			..Default::default()
-		})
+		.spawn(SpriteComponents::default())
 		.with(Paddle::default())
 		.with(player)
 		.with(Collider);

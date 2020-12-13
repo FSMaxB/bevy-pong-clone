@@ -34,15 +34,6 @@ pub enum Player {
 }
 
 impl Player {
-	fn start_position(&self) -> Vec2 {
-		let x_position = match self {
-			Player::Left => -300.0,
-			Player::Right => 300.0,
-		};
-
-		Vec2::new(x_position, 0.0)
-	}
-
 	fn movement_keys(&self) -> (KeyCode, KeyCode) {
 		match self {
 			Player::Left => (KeyCode::W, KeyCode::S),
