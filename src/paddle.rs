@@ -16,7 +16,7 @@ pub struct Paddle {
 
 impl Paddle {
 	const WIDTH: f32 = 20.0;
-	const MARGIN: f32 = 30.0;
+	const MARGIN: f32 = 50.0;
 
 	pub fn update_after_window_resize(
 		&mut self,
