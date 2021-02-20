@@ -1,7 +1,7 @@
 use bevy::asset::AssetServer;
 use bevy::ecs::{Commands, Res};
-use bevy::prelude::TextComponents;
 use bevy::text::TextStyle;
+use bevy::ui::entity::TextBundle;
 use bevy::ui::widget::Text;
 use bevy::ui::{AlignItems, AlignSelf, Style};
 
@@ -9,7 +9,7 @@ pub struct ScoreBoard;
 
 pub fn spawn_score_board(commands: &mut Commands, asset_server: &Res<AssetServer>) {
 	commands
-		.spawn(TextComponents {
+		.spawn(TextBundle {
 			style: Style {
 				align_self: AlignSelf::Center,
 				align_items: AlignItems::Center,

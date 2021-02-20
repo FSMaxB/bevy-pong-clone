@@ -1,7 +1,7 @@
 use crate::Collider;
 use bevy::ecs::Commands;
 use bevy::math::{Vec2, Vec3};
-use bevy::sprite::entity::SpriteComponents;
+use bevy::sprite::entity::SpriteBundle;
 use bevy::window::WindowResized;
 
 pub enum Wall {
@@ -33,5 +33,5 @@ pub fn spawn_walls(commands: &mut Commands) {
 }
 
 fn spawn_wall(commands: &mut Commands, wall: Wall) {
-	commands.spawn(SpriteComponents::default()).with(wall).with(Collider);
+	commands.spawn(SpriteBundle::default()).with(wall).with(Collider);
 }

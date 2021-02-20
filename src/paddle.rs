@@ -4,7 +4,7 @@ use bevy::ecs::{Commands, Query, Res};
 use bevy::input::keyboard::KeyCode;
 use bevy::input::Input;
 use bevy::math::{Vec2, Vec3};
-use bevy::sprite::entity::SpriteComponents;
+use bevy::sprite::entity::SpriteBundle;
 use bevy::transform::components::Transform;
 use bevy::window::WindowResized;
 
@@ -47,7 +47,7 @@ pub fn spawn_paddles(commands: &mut Commands) {
 
 fn spawn_paddle(commands: &mut Commands, player: Player) {
 	commands
-		.spawn(SpriteComponents::default())
+		.spawn(SpriteBundle::default())
 		.with(Paddle::default())
 		.with(player)
 		.with(Collider);
@@ -58,7 +58,7 @@ pub fn paddle_movement_system(
 	keyboard_input: Res<Input<KeyCode>>,
 	mut query: Query<(&Paddle, &Player, &mut Transform)>,
 ) {
-	let time_delta = time.delta_seconds;
+	let time_delta = time.delta_seconds();
 
 	for (paddle, player, mut transform) in query.iter_mut() {
 		let (up_keycode, down_keycode) = player.movement_keys();

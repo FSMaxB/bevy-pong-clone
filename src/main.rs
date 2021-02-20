@@ -46,18 +46,18 @@ impl Player {
 
 pub struct Collider;
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-	commands.spawn(Camera2dComponents::default());
-	commands.spawn(UiCameraComponents::default());
-	spawn_ball(&mut commands);
-	spawn_paddles(&mut commands);
-	spawn_walls(&mut commands);
-	spawn_goals(&mut commands);
-	spawn_score_board(&mut commands, &asset_server);
+fn setup(commands: &mut Commands, asset_server: Res<AssetServer>) {
+	commands.spawn(Camera2dBundle::default());
+	commands.spawn(CameraUiBundle::default());
+	spawn_ball(commands);
+	spawn_paddles(commands);
+	spawn_walls(commands);
+	spawn_goals(commands);
+	spawn_score_board(commands, &asset_server);
 	commands.insert_resource(ClearColor(Color::BLACK));
 	commands.insert_resource(WindowDescriptor {
-		width: 1280,
-		height: 720,
+		width: 1280.0,
+		height: 720.0,
 		title: "pong clone".to_string(),
 		vsync: true,
 		resizable: true,

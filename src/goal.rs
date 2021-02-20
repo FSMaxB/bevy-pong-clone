@@ -1,7 +1,7 @@
 use crate::Player;
 use bevy::ecs::Commands;
 use bevy::math::{Vec2, Vec3};
-use bevy::sprite::entity::SpriteComponents;
+use bevy::sprite::entity::SpriteBundle;
 use bevy::window::WindowResized;
 
 pub struct Goal;
@@ -36,5 +36,5 @@ pub fn spawn_goals(commands: &mut Commands) {
 }
 
 fn spawn_goal(commands: &mut Commands, player: Player) {
-	commands.spawn(SpriteComponents::default()).with(Goal).with(player);
+	commands.spawn(SpriteBundle::default()).with(Goal).with(player);
 }

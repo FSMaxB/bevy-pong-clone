@@ -4,7 +4,7 @@ use bevy::ecs::{Commands, Query, Res};
 use bevy::math::{Vec2, Vec3};
 use bevy::sprite::collide_aabb::collide;
 use bevy::sprite::collide_aabb::Collision;
-use bevy::sprite::entity::SpriteComponents;
+use bevy::sprite::entity::SpriteBundle;
 use bevy::sprite::Sprite;
 use bevy::transform::components::Transform;
 use bevy::window::WindowResized;
@@ -45,11 +45,11 @@ impl Default for Ball {
 }
 
 pub fn spawn_ball(commands: &mut Commands) {
-	commands.spawn(SpriteComponents::default()).with(Ball::default());
+	commands.spawn(SpriteBundle::default()).with(Ball::default());
 }
 
 pub fn ball_movement_system(time: Res<Time>, mut query: Query<(&Ball, &mut Transform)>) {
-	let time_delta = time.delta_seconds;
+	let time_delta = time.delta_seconds();
 	for (ball, mut transform) in query.iter_mut() {
 		transform.translation += time_delta * ball.velocity().extend(0.0);
 	}
@@ -75,18 +75,18 @@ pub fn ball_collision_system(
 
 			use Collision::*;
 			let (reflect_x, reflect_y) = match collision {
-				Left => (ball.direction.x() > 0.0, false),
-				Right => (ball.direction.x() < 0.0, false),
-				Top => (false, ball.direction.y() < 0.0),
-				Bottom => (false, ball.direction.y() > 0.0),
+				Left => (ball.direction.x > 0.0, false),
+				Right => (ball.direction.x < 0.0, false),
+				Top => (false, ball.direction.y < 0.0),
+				Bottom => (false, ball.direction.y > 0.0),
 			};
 
 			if reflect_x {
-				*ball.direction.x_mut() = -ball.direction.x();
+				ball.direction.x = -ball.direction.x;
 			}
 
 			if reflect_y {
-				*ball.direction.y_mut() = -ball.direction.y();
+				ball.direction.y = -ball.direction.y;
 			}
 		}
 	}
