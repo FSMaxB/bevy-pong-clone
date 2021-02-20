@@ -10,7 +10,7 @@ pub enum Wall {
 }
 
 impl Wall {
-	const THICKNESS: f32 = 20.0;
+	pub const THICKNESS: f32 = 20.0;
 
 	pub fn update_after_window_resize(&self, resize_event: &WindowResized, size: &mut Vec2, translation: &mut Vec3) {
 		let window_width = resize_event.width as f32;
