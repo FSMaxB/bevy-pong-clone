@@ -1,6 +1,6 @@
 use crate::Collider;
 use bevy::core::Time;
-use bevy::ecs::{Commands, Query, Res};
+use bevy::ecs::system::{Commands, Query, Res};
 use bevy::math::{Vec2, Vec3};
 use bevy::sprite::collide_aabb::collide;
 use bevy::sprite::collide_aabb::Collision;
@@ -45,7 +45,10 @@ impl Default for Ball {
 }
 
 pub fn spawn_ball(commands: &mut Commands) {
-	commands.spawn(SpriteBundle::default()).with(Ball::default());
+	commands
+		.spawn()
+		.insert_bundle(SpriteBundle::default())
+		.insert(Ball::default());
 }
 
 pub fn ball_movement_system(time: Res<Time>, mut query: Query<(&Ball, &mut Transform)>) {

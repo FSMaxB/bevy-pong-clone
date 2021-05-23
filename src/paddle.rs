@@ -1,6 +1,6 @@
 use crate::{Collider, Player};
 use bevy::core::Time;
-use bevy::ecs::{Commands, Query, Res};
+use bevy::ecs::system::{Commands, Query, Res};
 use bevy::input::keyboard::KeyCode;
 use bevy::input::Input;
 use bevy::math::{Vec2, Vec3};
@@ -47,10 +47,11 @@ pub fn spawn_paddles(commands: &mut Commands) {
 
 fn spawn_paddle(commands: &mut Commands, player: Player) {
 	commands
-		.spawn(SpriteBundle::default())
-		.with(Paddle::default())
-		.with(player)
-		.with(Collider);
+		.spawn()
+		.insert_bundle(SpriteBundle::default())
+		.insert(Paddle::default())
+		.insert(player)
+		.insert(Collider);
 }
 
 pub fn paddle_movement_system(

@@ -5,7 +5,7 @@ use crate::paddle::paddle_movement_system;
 use crate::paddle::{spawn_paddles, Paddle};
 use crate::score::spawn_score_board;
 use crate::wall::{spawn_walls, Wall};
-use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, PrintDiagnosticsPlugin};
+use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
 use bevy::render::pass::ClearColor;
 use bevy::window::WindowResized;
@@ -20,7 +20,7 @@ fn main() {
 	App::build()
 		.add_plugins(DefaultPlugins)
 		.add_plugin(FrameTimeDiagnosticsPlugin)
-		.add_plugin(PrintDiagnosticsPlugin::default())
+		.add_plugin(LogDiagnosticsPlugin::default())
 		.add_startup_system(setup.system())
 		.add_system(ball_movement_system.system())
 		.add_system(paddle_movement_system.system())
@@ -46,14 +46,14 @@ impl Player {
 
 pub struct Collider;
 
-fn setup(commands: &mut Commands, asset_server: Res<AssetServer>) {
-	commands.spawn(Camera2dBundle::default());
-	commands.spawn(CameraUiBundle::default());
-	spawn_ball(commands);
-	spawn_paddles(commands);
-	spawn_walls(commands);
-	spawn_goals(commands);
-	spawn_score_board(commands, &asset_server);
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+	commands.spawn().insert_bundle(OrthographicCameraBundle::new_2d());
+	commands.spawn().insert_bundle(UiCameraBundle::default());
+	spawn_ball(&mut commands);
+	spawn_paddles(&mut commands);
+	spawn_walls(&mut commands);
+	spawn_goals(&mut commands);
+	spawn_score_board(&mut commands, &asset_server);
 	commands.insert_resource(ClearColor(Color::BLACK));
 	commands.insert_resource(WindowDescriptor {
 		width: 1280.0,
@@ -63,40 +63,39 @@ fn setup(commands: &mut Commands, asset_server: Res<AssetServer>) {
 		resizable: true,
 		..Default::default()
 	});
-	commands.insert_resource(WindowResizeListenerState::default());
-}
-
-#[derive(Default)]
-struct WindowResizeListenerState {
-	event_reader: EventReader<WindowResized>,
 }
 
 fn window_resize_listener(
-	mut resize_listener: ResMut<WindowResizeListenerState>,
-	resize_events: Res<Events<WindowResized>>,
-	mut paddles: Query<(&mut Sprite, &mut Transform, &mut Paddle, &Player)>,
-	mut walls: Query<(&mut Sprite, &mut Transform, &Wall)>,
-	mut goals: Query<(&mut Sprite, &mut Transform, &Goal, &Player)>,
-	mut ball: Query<(&mut Ball, &mut Sprite, &mut Transform)>,
+	mut resize_reader: EventReader<WindowResized>,
+	mut query_set: QuerySet<(
+		Query<(&mut Sprite, &mut Transform, &mut Paddle, &Player)>,
+		Query<(&mut Sprite, &mut Transform, &Wall)>,
+		Query<(&mut Sprite, &mut Transform, &Goal, &Player)>,
+		Query<(&mut Sprite, &mut Transform, &mut Ball)>,
+	)>,
 ) {
-	if let Some(resize_event) = resize_listener.event_reader.latest(&resize_events) {
+	if let Some(resize_event) = resize_reader.iter().last() {
 		let width = resize_event.width;
 		let height = resize_event.height;
 		println!("Window resized to {}x{}", width, height);
 
+		let paddles = query_set.q0_mut();
 		for (mut sprite, mut transform, mut paddle, player) in paddles.iter_mut() {
 			paddle.update_after_window_resize(resize_event, *player, &mut sprite.size, &mut transform.translation);
 		}
 
+		let walls = query_set.q1_mut();
 		for (mut sprite, mut transform, wall) in walls.iter_mut() {
 			wall.update_after_window_resize(resize_event, &mut sprite.size, &mut transform.translation);
 		}
 
+		let goals = query_set.q2_mut();
 		for (mut sprite, mut transform, goal, player) in goals.iter_mut() {
 			goal.update_after_window_resize(resize_event, *player, &mut sprite.size, &mut transform.translation);
 		}
 
-		for (mut ball, mut sprite, mut transform) in ball.iter_mut() {
+		let ball = query_set.q3_mut();
+		for (mut sprite, mut transform, mut ball) in ball.iter_mut() {
 			ball.update_after_window_resize(resize_event, &mut sprite.size, &mut transform.translation);
 		}
 	}

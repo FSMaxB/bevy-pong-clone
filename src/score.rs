@@ -1,17 +1,18 @@
 use crate::wall::Wall;
 use bevy::asset::AssetServer;
-use bevy::ecs::{Commands, Res};
+use bevy::ecs::system::{Commands, Res};
 use bevy::math::{Rect, Size};
 use bevy::text::TextStyle;
+use bevy::text::{Text, TextSection};
 use bevy::ui::entity::TextBundle;
-use bevy::ui::widget::Text;
 use bevy::ui::{Style, Val};
 
 pub struct ScoreBoard;
 
 pub fn spawn_score_board(commands: &mut Commands, asset_server: &Res<AssetServer>) {
 	commands
-		.spawn(TextBundle {
+		.spawn()
+		.insert_bundle(TextBundle {
 			style: Style {
 				size: Size::new(Val::Px(100.0), Val::Px(50.0)),
 				// center
@@ -22,14 +23,17 @@ pub fn spawn_score_board(commands: &mut Commands, asset_server: &Res<AssetServer
 				..Default::default()
 			},
 			text: Text {
-				value: "0 : 0".to_string(),
-				font: asset_server.load("fonts/FiraSans-Bold.ttf"),
-				style: TextStyle {
-					font_size: 60.0,
-					..Default::default()
-				},
+				sections: vec![TextSection {
+					value: "0 : 0".to_string(),
+					style: TextStyle {
+						font_size: 60.0,
+						font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+						..Default::default()
+					},
+				}],
+				alignment: Default::default(),
 			},
 			..Default::default()
 		})
-		.with(ScoreBoard);
+		.insert(ScoreBoard);
 }
