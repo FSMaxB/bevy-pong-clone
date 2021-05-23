@@ -6,6 +6,19 @@ use bevy::text::TextStyle;
 use bevy::text::{Text, TextSection};
 use bevy::ui::entity::TextBundle;
 use bevy::ui::{Style, Val};
+use std::fmt::{Display, Formatter};
+
+#[derive(Default)]
+pub struct Score {
+	pub left: usize,
+	pub right: usize,
+}
+
+impl Display for Score {
+	fn fmt(&self, formatter: &mut Formatter) -> std::fmt::Result {
+		write!(formatter, "{}:{}", self.left, self.right)
+	}
+}
 
 pub struct ScoreBoard;
 
