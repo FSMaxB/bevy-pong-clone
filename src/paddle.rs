@@ -1,9 +1,11 @@
 use crate::{Collider, Player};
+use bevy::app::EventReader;
 use bevy::core::Time;
 use bevy::ecs::system::{Commands, Query, Res};
 use bevy::input::keyboard::KeyCode;
 use bevy::input::Input;
 use bevy::math::{Vec2, Vec3};
+use bevy::prelude::Sprite;
 use bevy::sprite::entity::SpriteBundle;
 use bevy::transform::components::Transform;
 use bevy::window::WindowResized;
@@ -16,19 +18,23 @@ pub struct Paddle {
 impl Paddle {
 	const WIDTH: f32 = 20.0;
 	const MARGIN: f32 = 50.0;
+}
 
-	pub fn update_after_window_resize(
-		&mut self,
-		resize_event: &WindowResized,
-		player: Player,
-		size: &mut Vec2,
-		translation: &mut Vec3,
-	) {
+pub fn paddle_resize_system(
+	mut resize_reader: EventReader<WindowResized>,
+	mut paddle_query: Query<(&mut Sprite, &mut Transform, &mut Paddle, &Player)>,
+) {
+	let resize_event = match resize_reader.iter().last() {
+		Some(event) => event,
+		None => return,
+	};
+
+	for (mut sprite, mut transform, mut paddle, &player) in paddle_query.iter_mut() {
 		let window_height = resize_event.height as f32;
 		let window_width = resize_event.width as f32;
-		self.speed = (window_height as f32) / 3.0;
+		paddle.speed = (window_height as f32) / 3.0;
 
-		*size = Vec2::new(Paddle::WIDTH, 0.2 * window_height);
+		sprite.size = Vec2::new(Paddle::WIDTH, 0.2 * window_height);
 
 		use Player::*;
 		let x_translation = match player {
@@ -36,7 +42,7 @@ impl Paddle {
 			Right => (window_width / 2.0) - Paddle::MARGIN,
 		};
 
-		*translation = Vec3::new(x_translation, 0.0, 0.0);
+		transform.translation = Vec3::new(x_translation, 0.0, 0.0);
 	}
 }
 
