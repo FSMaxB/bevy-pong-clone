@@ -1,4 +1,5 @@
 use crate::Collider;
+use bevy::app::EventReader;
 use bevy::core::Time;
 use bevy::ecs::system::{Commands, Query, Res};
 use bevy::math::{Vec2, Vec3};
@@ -18,21 +19,6 @@ impl Ball {
 	pub fn velocity(&self) -> Vec2 {
 		self.speed * self.direction.normalize()
 	}
-
-	pub fn update_after_window_resize(
-		&mut self,
-		resize_event: &WindowResized,
-		size: &mut Vec2,
-		translation: &mut Vec3,
-	) {
-		let window_height = resize_event.height as f32;
-		self.speed = window_height / 1.5;
-
-		let ball_width = 0.05 * window_height;
-		*size = Vec2::new(ball_width, ball_width);
-
-		*translation = Vec3::default();
-	}
 }
 
 impl Default for Ball {
@@ -49,6 +35,26 @@ pub fn spawn_ball(commands: &mut Commands) {
 		.spawn()
 		.insert_bundle(SpriteBundle::default())
 		.insert(Ball::default());
+}
+
+pub fn ball_resize_system(
+	mut resize_reader: EventReader<WindowResized>,
+	mut query: Query<(&mut Sprite, &mut Transform, &mut Ball)>,
+) {
+	let resize_event = match resize_reader.iter().last() {
+		Some(event) => event,
+		None => return,
+	};
+
+	for (mut sprite, mut transform, mut ball) in query.iter_mut() {
+		let window_height = resize_event.height as f32;
+		ball.speed = window_height / 1.5;
+
+		let ball_width = 0.05 * window_height;
+		sprite.size = Vec2::new(ball_width, ball_width);
+
+		transform.translation = Vec3::default();
+	}
 }
 
 pub fn ball_movement_system(time: Res<Time>, mut query: Query<(&Ball, &mut Transform)>) {
