@@ -1,11 +1,10 @@
-use crate::Collider;
+use crate::{Collider, Reset};
 use bevy::app::EventReader;
-use bevy::ecs::prelude::Query;
+use bevy::ecs::prelude::{Query, Res};
 use bevy::ecs::system::Commands;
 use bevy::math::{Vec2, Vec3};
-use bevy::prelude::{Sprite, Transform};
+use bevy::prelude::{Sprite, Transform, Windows};
 use bevy::sprite::entity::SpriteBundle;
-use bevy::window::WindowResized;
 
 pub enum Wall {
 	Top,
@@ -16,22 +15,22 @@ impl Wall {
 	pub const THICKNESS: f32 = 20.0;
 }
 
-pub fn wall_resize_system(
-	mut resize_reader: EventReader<WindowResized>,
+pub fn wall_reset_system(
+	mut reset_reader: EventReader<Reset>,
+	windows: Res<Windows>,
 	mut query: Query<(&mut Sprite, &mut Transform, &Wall)>,
 ) {
-	let resize_event = match resize_reader.iter().last() {
-		Some(event) => event,
-		None => return,
-	};
+	if reset_reader.iter().last().is_none() {
+		return;
+	}
+
+	let window = windows.get_primary().unwrap();
 
 	for (mut sprite, mut transform, wall) in query.iter_mut() {
-		let window_width = resize_event.width as f32;
-		let window_height = resize_event.height as f32;
-		sprite.size = Vec2::new(window_width, Wall::THICKNESS);
+		sprite.size = Vec2::new(window.width(), Wall::THICKNESS);
 
 		use Wall::*;
-		let y_offset = (window_height - Wall::THICKNESS) / 2.0;
+		let y_offset = (window.height() - Wall::THICKNESS) / 2.0;
 		let y_position = match wall {
 			Top => y_offset,
 			Bottom => -y_offset,

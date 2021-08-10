@@ -1,4 +1,5 @@
 use crate::wall::Wall;
+use crate::Reset;
 use bevy::app::EventReader;
 use bevy::asset::AssetServer;
 use bevy::ecs::prelude::Query;
@@ -15,9 +16,6 @@ pub struct Score {
 	pub left: usize,
 	pub right: usize,
 }
-
-/// Event that is triggered when a player scored a goal.
-pub struct Scored;
 
 impl Display for Score {
 	fn fmt(&self, formatter: &mut Formatter) -> std::fmt::Result {
@@ -57,14 +55,13 @@ pub fn spawn_score_board(commands: &mut Commands, asset_server: &Res<AssetServer
 }
 
 pub fn scoreboard_update_system(
-	mut scored_reader: EventReader<Scored>,
+	mut reset_reader: EventReader<Reset>,
 	score: Res<Score>,
 	mut query: Query<(&mut Text, &ScoreBoard)>,
 ) {
-	match scored_reader.iter().last() {
-		Some(_) => {}
-		None => return,
-	};
+	if reset_reader.iter().last().is_none() {
+		return;
+	}
 
 	for (mut text, _score_board) in query.iter_mut() {
 		if let Some(section) = text.sections.get_mut(0) {

@@ -1,14 +1,14 @@
-use crate::Collider;
+use crate::{Collider, Reset};
 use bevy::app::EventReader;
 use bevy::core::Time;
 use bevy::ecs::system::{Commands, Query, Res};
 use bevy::math::{Vec2, Vec3};
+use bevy::prelude::Windows;
 use bevy::sprite::collide_aabb::collide;
 use bevy::sprite::collide_aabb::Collision;
 use bevy::sprite::entity::SpriteBundle;
 use bevy::sprite::Sprite;
 use bevy::transform::components::Transform;
-use bevy::window::WindowResized;
 
 pub struct Ball {
 	speed: f32,
@@ -37,20 +37,21 @@ pub fn spawn_ball(commands: &mut Commands) {
 		.insert(Ball::default());
 }
 
-pub fn ball_resize_system(
-	mut resize_reader: EventReader<WindowResized>,
+pub fn ball_reset_system(
+	mut reset_reader: EventReader<Reset>,
+	windows: Res<Windows>,
 	mut query: Query<(&mut Sprite, &mut Transform, &mut Ball)>,
 ) {
-	let resize_event = match resize_reader.iter().last() {
-		Some(event) => event,
-		None => return,
-	};
+	if reset_reader.iter().last().is_none() {
+		return;
+	}
+
+	let window = windows.get_primary().unwrap();
 
 	for (mut sprite, mut transform, mut ball) in query.iter_mut() {
-		let window_height = resize_event.height as f32;
-		ball.speed = window_height / 1.5;
+		ball.speed = window.height() / 1.5;
 
-		let ball_width = 0.05 * window_height;
+		let ball_width = 0.05 * window.height();
 		sprite.size = Vec2::new(ball_width, ball_width);
 
 		transform.translation = Vec3::default();

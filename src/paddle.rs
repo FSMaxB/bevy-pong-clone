@@ -1,14 +1,13 @@
-use crate::{Collider, Player};
+use crate::{Collider, Player, Reset};
 use bevy::app::EventReader;
 use bevy::core::Time;
 use bevy::ecs::system::{Commands, Query, Res};
 use bevy::input::keyboard::KeyCode;
 use bevy::input::Input;
 use bevy::math::{Vec2, Vec3};
-use bevy::prelude::Sprite;
+use bevy::prelude::{Sprite, Windows};
 use bevy::sprite::entity::SpriteBundle;
 use bevy::transform::components::Transform;
-use bevy::window::WindowResized;
 
 #[derive(Default)]
 pub struct Paddle {
@@ -20,26 +19,26 @@ impl Paddle {
 	const MARGIN: f32 = 50.0;
 }
 
-pub fn paddle_resize_system(
-	mut resize_reader: EventReader<WindowResized>,
+pub fn paddle_reset_system(
+	mut reset_reader: EventReader<Reset>,
+	windows: Res<Windows>,
 	mut paddle_query: Query<(&mut Sprite, &mut Transform, &mut Paddle, &Player)>,
 ) {
-	let resize_event = match resize_reader.iter().last() {
-		Some(event) => event,
-		None => return,
-	};
+	if reset_reader.iter().last().is_none() {
+		return;
+	}
+
+	let window = windows.get_primary().unwrap();
 
 	for (mut sprite, mut transform, mut paddle, &player) in paddle_query.iter_mut() {
-		let window_height = resize_event.height as f32;
-		let window_width = resize_event.width as f32;
-		paddle.speed = (window_height as f32) / 3.0;
+		paddle.speed = window.height() / 3.0;
 
-		sprite.size = Vec2::new(Paddle::WIDTH, 0.2 * window_height);
+		sprite.size = Vec2::new(Paddle::WIDTH, 0.2 * window.height());
 
 		use Player::*;
 		let x_translation = match player {
-			Left => Paddle::MARGIN - (window_width / 2.0),
-			Right => (window_width / 2.0) - Paddle::MARGIN,
+			Left => Paddle::MARGIN - (window.width() / 2.0),
+			Right => (window.width() / 2.0) - Paddle::MARGIN,
 		};
 
 		transform.translation = Vec3::new(x_translation, 0.0, 0.0);
