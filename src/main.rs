@@ -3,7 +3,7 @@ use crate::ball::{ball_collision_system, ball_movement_system, ball_resize_syste
 use crate::goal::{goal_collision_system, goal_resize_system, spawn_goals};
 use crate::paddle::spawn_paddles;
 use crate::paddle::{paddle_movement_system, paddle_resize_system};
-use crate::score::{spawn_score_board, Score};
+use crate::score::{scoreboard_update_system, spawn_score_board, Score, Scored};
 use crate::wall::{spawn_walls, wall_resize_system};
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
@@ -20,6 +20,7 @@ fn main() {
 		.add_plugins(DefaultPlugins)
 		.add_plugin(FrameTimeDiagnosticsPlugin)
 		.add_plugin(LogDiagnosticsPlugin::default())
+		.add_event::<Scored>()
 		.insert_resource(Score::default())
 		.add_startup_system(setup.system())
 		.add_system(ball_movement_system.system())
@@ -30,6 +31,7 @@ fn main() {
 		.add_system(goal_collision_system.system())
 		.add_system(goal_resize_system.system())
 		.add_system(wall_resize_system.system())
+		.add_system(scoreboard_update_system.system())
 		.run();
 }
 

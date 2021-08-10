@@ -1,7 +1,7 @@
 use crate::ball::Ball;
-use crate::score::Score;
+use crate::score::{Score, Scored};
 use crate::Player;
-use bevy::app::EventReader;
+use bevy::app::{EventReader, EventWriter};
 use bevy::ecs::system::{Commands, Query, ResMut};
 use bevy::math::{Vec2, Vec3};
 use bevy::sprite::collide_aabb::collide;
@@ -56,6 +56,7 @@ pub fn goal_resize_system(
 }
 
 pub fn goal_collision_system(
+	mut scored_writer: EventWriter<Scored>,
 	ball_query: Query<(&Ball, &Transform, &Sprite)>,
 	goal_query: Query<(&Transform, &Sprite, &Goal, &Player)>,
 	mut score: ResMut<Score>,
@@ -75,6 +76,7 @@ pub fn goal_collision_system(
 					Left => score.deref_mut().left += 1,
 					Right => score.deref_mut().right += 1,
 				}
+				scored_writer.send(Scored);
 			}
 		}
 	}

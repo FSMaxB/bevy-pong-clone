@@ -1,5 +1,7 @@
 use crate::wall::Wall;
+use bevy::app::EventReader;
 use bevy::asset::AssetServer;
+use bevy::ecs::prelude::Query;
 use bevy::ecs::system::{Commands, Res};
 use bevy::math::{Rect, Size};
 use bevy::text::TextStyle;
@@ -14,9 +16,12 @@ pub struct Score {
 	pub right: usize,
 }
 
+/// Event that is triggered when a player scored a goal.
+pub struct Scored;
+
 impl Display for Score {
 	fn fmt(&self, formatter: &mut Formatter) -> std::fmt::Result {
-		write!(formatter, "{}:{}", self.left, self.right)
+		write!(formatter, "{} : {}", self.left, self.right)
 	}
 }
 
@@ -37,7 +42,7 @@ pub fn spawn_score_board(commands: &mut Commands, asset_server: &Res<AssetServer
 			},
 			text: Text {
 				sections: vec![TextSection {
-					value: "0 : 0".to_string(),
+					value: Score::default().to_string(),
 					style: TextStyle {
 						font_size: 60.0,
 						font: asset_server.load("fonts/FiraSans-Bold.ttf"),
@@ -49,4 +54,21 @@ pub fn spawn_score_board(commands: &mut Commands, asset_server: &Res<AssetServer
 			..Default::default()
 		})
 		.insert(ScoreBoard);
+}
+
+pub fn scoreboard_update_system(
+	mut scored_reader: EventReader<Scored>,
+	score: Res<Score>,
+	mut query: Query<(&mut Text, &ScoreBoard)>,
+) {
+	match scored_reader.iter().last() {
+		Some(_) => {}
+		None => return,
+	};
+
+	for (mut text, _score_board) in query.iter_mut() {
+		if let Some(section) = text.sections.get_mut(0) {
+			section.value = score.to_string();
+		}
+	}
 }
