@@ -4,7 +4,7 @@ use crate::goal::{goal_collision_system, spawn_goals, Goal};
 use crate::paddle::spawn_paddles;
 use crate::paddle::{paddle_movement_system, paddle_resize_system};
 use crate::score::{spawn_score_board, Score};
-use crate::wall::{spawn_walls, Wall};
+use crate::wall::{spawn_walls, wall_resize_system};
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
 use bevy::render::pass::ClearColor;
@@ -30,6 +30,7 @@ fn main() {
 		.add_system(window_resize_listener.system())
 		.add_system(ball_collision_system.system())
 		.add_system(goal_collision_system.system())
+		.add_system(wall_resize_system.system())
 		.run();
 }
 
@@ -72,7 +73,6 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 fn window_resize_listener(
 	mut resize_reader: EventReader<WindowResized>,
 	mut query_set: QuerySet<(
-		Query<(&mut Sprite, &mut Transform, &Wall)>,
 		Query<(&mut Sprite, &mut Transform, &Goal, &Player)>,
 		Query<(&mut Sprite, &mut Transform, &mut Ball)>,
 	)>,
@@ -84,17 +84,12 @@ fn window_resize_listener(
 		let height = resize_event.height;
 		println!("Window resized to {}x{}", width, height);
 
-		let walls = query_set.q0_mut();
-		for (mut sprite, mut transform, wall) in walls.iter_mut() {
-			wall.update_after_window_resize(resize_event, &mut sprite.size, &mut transform.translation);
-		}
-
-		let goals = query_set.q1_mut();
+		let goals = query_set.q0_mut();
 		for (mut sprite, mut transform, goal, player) in goals.iter_mut() {
 			goal.update_after_window_resize(resize_event, *player, &mut sprite.size, &mut transform.translation);
 		}
 
-		let ball = query_set.q2_mut();
+		let ball = query_set.q1_mut();
 		for (mut sprite, mut transform, mut ball) in ball.iter_mut() {
 			ball.update_after_window_resize(resize_event, &mut sprite.size, &mut transform.translation);
 		}
