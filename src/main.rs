@@ -1,6 +1,6 @@
 use crate::ball::{ball_collision_system, ball_movement_system};
 use crate::ball::{spawn_ball, Ball};
-use crate::goal::{goal_collision_system, spawn_goals, Goal};
+use crate::goal::{goal_collision_system, goal_resize_system, spawn_goals};
 use crate::paddle::spawn_paddles;
 use crate::paddle::{paddle_movement_system, paddle_resize_system};
 use crate::score::{spawn_score_board, Score};
@@ -30,6 +30,7 @@ fn main() {
 		.add_system(window_resize_listener.system())
 		.add_system(ball_collision_system.system())
 		.add_system(goal_collision_system.system())
+		.add_system(goal_resize_system.system())
 		.add_system(wall_resize_system.system())
 		.run();
 }
@@ -72,10 +73,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
 fn window_resize_listener(
 	mut resize_reader: EventReader<WindowResized>,
-	mut query_set: QuerySet<(
-		Query<(&mut Sprite, &mut Transform, &Goal, &Player)>,
-		Query<(&mut Sprite, &mut Transform, &mut Ball)>,
-	)>,
+	mut query_set: QuerySet<(Query<(&mut Sprite, &mut Transform, &mut Ball)>,)>,
 	score: Res<Score>,
 ) {
 	if let Some(resize_event) = resize_reader.iter().last() {
@@ -84,12 +82,7 @@ fn window_resize_listener(
 		let height = resize_event.height;
 		println!("Window resized to {}x{}", width, height);
 
-		let goals = query_set.q0_mut();
-		for (mut sprite, mut transform, goal, player) in goals.iter_mut() {
-			goal.update_after_window_resize(resize_event, *player, &mut sprite.size, &mut transform.translation);
-		}
-
-		let ball = query_set.q1_mut();
+		let ball = query_set.q0_mut();
 		for (mut sprite, mut transform, mut ball) in ball.iter_mut() {
 			ball.update_after_window_resize(resize_event, &mut sprite.size, &mut transform.translation);
 		}

@@ -1,6 +1,7 @@
 use crate::ball::Ball;
 use crate::score::Score;
 use crate::Player;
+use bevy::app::EventReader;
 use bevy::ecs::system::{Commands, Query, ResMut};
 use bevy::math::{Vec2, Vec3};
 use bevy::sprite::collide_aabb::collide;
@@ -14,26 +15,6 @@ pub struct Goal;
 
 impl Goal {
 	const THICKNESS: f32 = 20.0;
-
-	pub fn update_after_window_resize(
-		&self,
-		resize_event: &WindowResized,
-		player: Player,
-		size: &mut Vec2,
-		translation: &mut Vec3,
-	) {
-		let window_width = resize_event.width as f32;
-		let window_height = resize_event.height as f32;
-		*size = Vec2::new(Self::THICKNESS, window_height);
-
-		use Player::*;
-		let x_offset = (window_width - Self::THICKNESS) / 2.0;
-		let x_position = match player {
-			Left => x_offset,
-			Right => -x_offset,
-		};
-		*translation = Vec3::new(x_position, 0.0, 0.0);
-	}
 }
 
 pub fn spawn_goals(commands: &mut Commands) {
@@ -47,6 +28,31 @@ fn spawn_goal(commands: &mut Commands, player: Player) {
 		.insert_bundle(SpriteBundle::default())
 		.insert(Goal)
 		.insert(player);
+}
+
+pub fn goal_resize_system(
+	mut resize_reader: EventReader<WindowResized>,
+	mut query: Query<(&mut Sprite, &mut Transform, &Goal, &Player)>,
+) {
+	let resize_event = match resize_reader.iter().last() {
+		Some(event) => event,
+		None => return,
+	};
+
+	for (mut sprite, mut transform, _goal, player) in query.iter_mut() {
+		let window_width = resize_event.width as f32;
+		let window_height = resize_event.height as f32;
+
+		sprite.size = Vec2::new(Goal::THICKNESS, window_height);
+
+		use Player::*;
+		let x_offset = (window_width - Goal::THICKNESS) / 2.0;
+		let x_position = match player {
+			Left => x_offset,
+			Right => -x_offset,
+		};
+		transform.translation = Vec3::new(x_position, 0.0, 0.0);
+	}
 }
 
 pub fn goal_collision_system(
